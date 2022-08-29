@@ -13,6 +13,7 @@ struct DailyScrum: Identifiable {
     var attendees: [Attendee]
     var lengthInMinutes: Int
     var theme: Theme
+    var history: [History] = []
 
     var data: Data {
         Data(
@@ -39,6 +40,15 @@ struct DailyScrum: Identifiable {
         attendees = scrum.attendees
         lengthInMinutes = Int(scrum.lengthInMinutes)
         theme = scrum.theme
+    }
+}
+
+extension DailyScrum {
+    init(data: DailyScrum.Data) {
+        title = data.title
+        attendees = data.attendees
+        lengthInMinutes = Int(data.lengthInMinutes)
+        theme = data.theme
     }
 }
 
