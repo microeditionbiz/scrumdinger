@@ -15,16 +15,26 @@ struct ScrumdingerApp: App {
         WindowGroup {
             NavigationView {
                 ScrumsView(scrums: $store.scrums) {
-                    store.save { result in
-                        if case .failure(let error) = result {
-                            fatalError(error.localizedDescription)
+                    Task {
+                        do {
+                            try await ScrumStore.save(scrums: store.scrums)
+                        } catch {
+                            fatalError("Error saving scrums.")
                         }
                     }
                 }
             }
-            .onAppear() {
-                store.load()
+            .task {
+                do {
+                    store.scrums = try await ScrumStore.load()
+                } catch {
+                    store.scrums = []
+                }
             }
+
+//            .onAppear() {
+//                store.scrums = await ScrumStore.load()
+//            }
         }
     }
 }

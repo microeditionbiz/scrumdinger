@@ -22,21 +22,27 @@ class ScrumStore: ObservableObject {
         .appendingPathComponent("scrums.data")
     }
 
-    func load(completion: ((Result<Void, Error>) -> Void)? = nil) {
+    static func load() async throws -> [DailyScrum] {
+        try await withCheckedThrowingContinuation { continuation in
+            load { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
+    static func load(completion: ((Result<[DailyScrum], Error>) -> Void)? = nil) {
         DispatchQueue.global(qos: .background).async {
             do {
                 let fileURL = try Self.fileURL()
                 guard let file = try? FileHandle(forReadingFrom: fileURL) else {
                     DispatchQueue.main.async {
-                        self.scrums = []
-                        completion?(.success(()))
+                        completion?(.success([]))
                     }
                     return
                 }
                 let dailyScrums = try JSONDecoder().decode([DailyScrum].self, from: file.availableData)
                     DispatchQueue.main.async {
-                        self.scrums = dailyScrums
-                        completion?(.success(()))
+                        completion?(.success(dailyScrums))
                     }
             } catch {
                 DispatchQueue.main.async {
@@ -46,10 +52,18 @@ class ScrumStore: ObservableObject {
         }
     }
 
-    func save(completion: @escaping (Result<Void, Error>) -> Void) {
+    static func save(scrums: [DailyScrum]) async throws {
+        try await withCheckedThrowingContinuation { continuation in
+            save(scrums: scrums) { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
+    static func save(scrums: [DailyScrum], completion: @escaping (Result<Void, Error>) -> Void) {
         DispatchQueue.global(qos: .background).async {
             do {
-                let data = try JSONEncoder().encode(self.scrums)
+                let data = try JSONEncoder().encode(scrums)
                 let outfile = try Self.fileURL()
                 try data.write(to: outfile)
                 DispatchQueue.main.async {
