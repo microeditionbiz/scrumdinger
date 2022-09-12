@@ -31,10 +31,6 @@ struct ScrumdingerApp: App {
                     store.scrums = []
                 }
             }
-
-//            .onAppear() {
-//                store.scrums = await ScrumStore.load()
-//            }
         }
     }
 }
